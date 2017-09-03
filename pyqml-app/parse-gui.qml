@@ -16,6 +16,7 @@ ApplicationWindow {
         RowLayout {
             anchors.fill: parent
             ToolButton {
+                id: menuButton
                 text: qsTr("⋮")
                 onClicked: menu.open()
             }
@@ -43,6 +44,7 @@ ApplicationWindow {
 
             MenuItem {
                 text: "Open csv..."
+                onTriggered: parser.openfile()
             }
             MenuItem {
                 text: "Filter by..."
