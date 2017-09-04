@@ -3,7 +3,8 @@ import QtQuick.Controls 1.4 //stable table-view
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
 import QtQuick.Window 2.2
-import QtQuick.Controls.Material 2.1    
+import QtQuick.Controls.Material 2.1
+import QtQuick.Dialogs 1.2
 
 ApplicationWindow {
     visible: true
@@ -21,6 +22,7 @@ ApplicationWindow {
                 onClicked: menu.open()
             }
             Label {
+                id: helm
                 text: "Title"
                 elide: Label.ElideRight
                 horizontalAlignment: Qt.AlignHCenter
@@ -44,10 +46,23 @@ ApplicationWindow {
 
             MenuItem {
                 text: "Open csv..."
-                onTriggered: parser.openfile()
+                onTriggered: fileDialog.open()
             }
             MenuItem {
                 text: "Filter by..."
+            }
+        }
+
+        FileDialog {
+            id: fileDialog
+            title: "Open file..."
+            nameFilters: [ "csv files (*.csv)", "All files (*)" ]
+            onAccepted: {
+                parser.openfile(fileDialog.fileUrl)
+                helm.text = fileDialog.fileUrl
+            }
+            onRejected: {
+                Qt.quit()
             }
         }
 
@@ -82,6 +97,8 @@ ApplicationWindow {
                     title: "AnotherNumber"
                     width: 150
                 }
+
+                model: listModel
             }
         }
 
