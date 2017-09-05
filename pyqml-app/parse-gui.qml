@@ -99,7 +99,23 @@ ApplicationWindow {
                 }
 
                 model: listModel
+                onModelChanged: update()
             }
+
+            //
+            ListModel{
+                id:listModel
+                ListElement{
+                    msgtype: "none"
+                    signtext: "none"
+                    onenumb: "-"
+                    anothernumb: "-"
+                }
+                onDataChanged: {
+                console.log("Data changed")
+                }
+            }
+
         }
 
         //reserve page
@@ -108,6 +124,16 @@ ApplicationWindow {
                 text: qsTr("For some reasons in future")
                 anchors.centerIn: parent
             }
+        }
+    }
+
+    Connections {
+        target: parser
+
+        // new row signal handler
+        onRowAdd: {
+            listModel.append({"msgtype": model1, "signtext": model2, "onenumb": model3, "anothernumb": model4})
+            //tableView.update()  //on this stage to highlight rowdelegate i'm planning
         }
     }
 
