@@ -9,7 +9,7 @@ import QtQuick.Dialogs 1.2
 ApplicationWindow {
     visible: true
     width: 960
-    height: 540
+    height: 680
     title: qsTr("LOG-Parser")
 
     //bar with core buttons/avaliable options: open files, look-in hystory?, filter content
@@ -49,7 +49,68 @@ ApplicationWindow {
                 onTriggered: fileDialog.open()
             }
             MenuItem {
+                id: filterbutton
                 text: "Filter by..."
+                onTriggered: submenu1.open()
+                enabled: false
+
+                 //sources and types were bind hardly, but we can try to add items dynamically, if it really needs
+                 //or, maybe, allow user to choose a list of filters in one time
+                 Menu {
+                    id: submenu1
+                    MenuItem {
+                        text: "Nothing"
+                        onTriggered: parser.filterbytypesource("", "msgtype")
+                    }
+                    MenuItem{
+                        text: "Period"
+                        onTriggered: period.open()
+                    }
+                    MenuItem {
+                        text: "Debug type"
+                        onTriggered: parser.filterbytypesource("DEBUG", "msgtype")
+                    }
+                    MenuItem {
+                        text: "Error type"
+                        onTriggered: parser.filterbytypesource("ERROR", "msgtype")
+                    }
+                    MenuItem {
+                        text: "Warning type"
+                        onTriggered: parser.filterbytypesource("WARNING", "msgtype")
+                    }
+                    MenuItem {
+                        text: "Signal source"
+                        onTriggered: submenu2.open()
+
+                        Menu {
+                           id: submenu2
+                           MenuItem {
+                               text: "GtDict"
+                               onTriggered: parser.filterbytypesource("GtDict", "sigsource")
+                           }
+                           MenuItem {
+                               text: "GtFrame"
+                               onTriggered: parser.filterbytypesource("GtFrame", "sigsource")
+                           }
+                           MenuItem {
+                               text: "GtMeas"
+                               onTriggered: parser.filterbytypesource("GtMeas", "sigsource")
+                           }
+                           MenuItem {
+                               text: "GtSp3"
+                               onTriggered: parser.filterbytypesource("GtSp3", "sigsource")
+                           }
+                           MenuItem {
+                               text: "GtState"
+                               onTriggered: parser.filterbytypesource("GtState", "sigsource")
+                           }
+                           MenuItem {
+                               text: "PsSp3"
+                               onTriggered: parser.filterbytypesource("PsSp3", "sigsource")
+                           }
+                       }
+                    }
+                }
             }
         }
 
@@ -60,9 +121,40 @@ ApplicationWindow {
             onAccepted: {
                 parser.openfile(fileDialog.fileUrl)
                 helm.text = fileDialog.fileUrl
+                filterbutton.enabled = true
             }
-            onRejected: {
-                Qt.quit()
+        }
+
+        Dialog {
+            id: period
+            title: "LOG-Parser"
+            //width: 420
+            standardButtons: Dialog.Ok | Dialog.Cancel
+            onAccepted: parser.filterbytime(first.text, last.text)
+
+            ColumnLayout {
+                anchors.fill: parent
+
+                Label {
+                    text: qsTr("Set the timestamp limit for represented content")
+                }
+
+                RowLayout {
+
+                    TextInput {
+                        id: first
+                        text: ""
+                    }
+
+                    Label {
+                        text: "-"
+                    }
+
+                    TextInput {
+                        id: last
+                        text: ""
+                    }
+                }
             }
         }
 
@@ -134,7 +226,7 @@ ApplicationWindow {
                 id:listModel
                 ListElement{
                     timestamp: "0000.00.00 00:00:00.000"
-                    msgtype: "-------"
+                    msgtype: "DEBUG"
                     sigsource: "--------"
                     msgcontent: "@0000000=0 - elapsed time[ms]: 0 returns [0000000000; 0000000000]"
                 }
@@ -162,6 +254,12 @@ ApplicationWindow {
         // clear tableview (plug's roles were saved)
         onSetUp: {
             listModel.clear()
+        }
+
+        // set limits of "dialog"'s filtering limits
+        onUpdatePeriod: {
+            first.text = mesg1
+            last.text = mesg2
         }
     }
 
