@@ -8,9 +8,9 @@ import QtQuick.Dialogs 1.2
 
 ApplicationWindow {
     visible: true
-    width: 640
-    height: 480
-    title: qsTr("CSV-Parser")
+    width: 960
+    height: 540
+    title: qsTr("LOG-Parser")
 
     //bar with core buttons/avaliable options: open files, look-in hystory?, filter content
     header: ToolBar {
@@ -45,7 +45,7 @@ ApplicationWindow {
             y: menuButton.height
 
             MenuItem {
-                text: "Open csv..."
+                text: "Open log..."
                 onTriggered: fileDialog.open()
             }
             MenuItem {
@@ -56,7 +56,7 @@ ApplicationWindow {
         FileDialog {
             id: fileDialog
             title: "Open file..."
-            nameFilters: [ "csv files (*.csv)", "All files (*)" ]
+            nameFilters: [ "log files (*.log)", "All files (*)" ]
             onAccepted: {
                 parser.openfile(fileDialog.fileUrl)
                 helm.text = fileDialog.fileUrl
@@ -77,42 +77,66 @@ ApplicationWindow {
             TableView {
                 id: tableView
                 anchors.fill: parent
+                selectionMode: SelectionMode.ExtendedSelection
+
+                TableViewColumn {
+                    role: "timestamp"
+                    title: "TimeStamp"
+                    width: 195
+                }
                 TableViewColumn {
                     role: "msgtype"
                     title: "MessageType"
-                    width: 150
+                    width: 135
                 }
                 TableViewColumn {
-                    role: "signtext"
-                    title: "SignificantText"
-                    width: 200
+                    role: "sigsource"
+                    title: "SignalSource"
+                    width: 135
                 }
                 TableViewColumn {
-                    role: "onenumb"
-                    title: "OneNumber"
-                    width: 150
+                    role: "msgcontent"
+                    title: "MessageContent"
+                    width: 495
                 }
-                TableViewColumn {
-                    role: "anothernumb"
-                    title: "AnotherNumber"
-                    width: 150
+
+                //highlitning special messages
+                rowDelegate: Component {
+                    Rectangle {
+                        color: if (styleData.selected)
+                                   "slateblue"
+                               else if (listModel.get(styleData.row).msgtype === "ERROR")
+                                   "crimson"
+                               else if (listModel.get(styleData.row).msgtype === "WARNING")
+                                   "yellow"
+                               else
+                                   "white"
+                        border.color: "gainsboro"
+                        border.width: 0 //dunno, am i in need of'em, too thick
+                    }
+                }
+
+                //text contrast for more comfortable viewing
+                itemDelegate: Item {
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        color: listModel.get(styleData.row).msgtype === "ERROR" ? "white" : "black"
+                        elide: Text.ElideMiddle
+                        text: styleData.value
+                    }
                 }
 
                 model: listModel
-                onModelChanged: update()
             }
 
-            //
+            //core plug for creating roles (existing tablecolumn's roles isn't enough for the first uploading)
             ListModel{
                 id:listModel
                 ListElement{
-                    msgtype: "none"
-                    signtext: "none"
-                    onenumb: "-"
-                    anothernumb: "-"
-                }
-                onDataChanged: {
-                console.log("Data changed")
+                    timestamp: "0000.00.00 00:00:00.000"
+                    msgtype: "-------"
+                    sigsource: "--------"
+                    msgcontent: "@0000000=0 - elapsed time[ms]: 0 returns [0000000000; 0000000000]"
                 }
             }
 
@@ -132,8 +156,12 @@ ApplicationWindow {
 
         // new row signal handler
         onRowAdd: {
-            listModel.append({"msgtype": model1, "signtext": model2, "onenumb": model3, "anothernumb": model4})
-            //tableView.update()  //on this stage to highlight rowdelegate i'm planning
+            listModel.append({"timestamp": model1, "msgtype": model2, "sigsource": model3, "msgcontent": model4})
+        }
+
+        // clear tableview (plug's roles were saved)
+        onSetUp: {
+            listModel.clear()
         }
     }
 

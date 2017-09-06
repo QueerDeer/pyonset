@@ -1,0 +1,14 @@
+2017.09.04 05:00:00.192	INFO   	GtSp3	@2057622 - request for: 1504501190
+2017.09.04 05:00:00.192	INFO   	GtSp3	@2057622=1 - elapsed time [ms]: 3
+2017.09.04 05:00:00.301	INFO   	GtSp3	@2057623 - request for: 1504501190
+2017.09.04 05:00:00.301	INFO   	GtSp3	@2057623=1 - elapsed time [ms]: 3
+2017.09.04 05:00:00.301	INFO   	GtFrame	@2057624 started.
+2017.09.04 05:00:00.301	INFO   	GtFrame	@2057624=1 - elapsed time [ms]: 0
+2017.09.04 05:00:00.457	INFO   	GtState	@2057625 started.
+0000.00.00 00:00:00.000	ERROR	None	@0000000=0 - elapsed time[ms]: 0 returns [0000000000; 0000000000]
+2017.09.04 05:00:00.457	INFO   	GtState	@2057625=1 - elapsed time[ms]: 0 returns [1504501115; 1504501182]
+2017.09.04 05:00:00.457	INFO   	GtDict	@2057626 started.
+2017.09.04 05:00:00.457	INFO   	GtDict	@2057626=1 - elapsed time [ms]: 0
+2017.09.04 05:00:00.457	INFO   	GtMeas	@2057627 - request for: 1504501177
+0000.00.00 00:00:00.000	WARNING	GtMeas	@0000000=0 - elapsed time [ms]: 0
+2017.09.04 05:00:00.488	INFO   	GtMeas	@2057627=1 - elapsed time [ms]: 35
