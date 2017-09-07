@@ -12,7 +12,8 @@ from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 class Parser(QObject):
     def __init__(self):
         QObject.__init__(self)
-        self.filedict = {}
+        self.filedict = []
+        self.savedfilename = ''
 
     rowAdd = pyqtSignal(int, arguments=['mesg'])  # add new row through context param-s
     setUp = pyqtSignal(int, arguments=['mesg'])  # add first
@@ -33,26 +34,34 @@ class Parser(QObject):
     # filling table with row of timestamp limits in first and last param-s
     @pyqtSlot(str, str)
     def filterbytime(self, first, last):
-        print('ok')
         self.setUp.emit(1)
+        buferdictlist = []
         for row in self.filedict:
             if first <= row['timestamp'] <= last:
                 self.rowtotable(row)
+                buferdictlist.append(row)
+        self.filedict = list(buferdictlist)
 
     # filling table with rows of special single words in their concrete fields (such as 'msgtype', 'sigsource')
     @pyqtSlot(str, str)
     def filterbytypesource(self, msgtype, fieldtype):
-        print("ok")
         self.setUp.emit(1)
-        for row in self.filedict:
-            if row[fieldtype] == msgtype or msgtype == '':
-                self.rowtotable(row)
+        if msgtype == '':
+            self.openfile(self.savedfilename)
+        else:
+            buferdictlist = []
+            for row in self.filedict:
+                if row[fieldtype] == msgtype:
+                    self.rowtotable(row)
+                    buferdictlist.append(row)
+            self.filedict = list(buferdictlist)
 
     # open file by piece of it's fullpath to write it in a dict for filtering, repeat it to rebuild tableview's model
     # or it will close immediately and will not be accessible for iterating
     @pyqtSlot(str)
     def openfile(self, filename):
         with open(filename[7:]) as csvfile:
+            self.savedfilename = filename
             self.setUp.emit(1)
             reader = csv.DictReader(csvfile,  fieldnames=['timestamp', 'msgtype', 'sigsource', 'msgcontent'], dialect='excel-tab')
             self.filedict = list(reader)

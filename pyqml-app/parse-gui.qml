@@ -244,6 +244,7 @@ ApplicationWindow {
             anchors.centerIn: parent
                 AnimatedImage {
                 visible: easteregg.position == 1.0 ? true : false
+                paused: easteregg.position == 0.0 ? true : false
                 source: "https://bunusevdim.files.wordpress.com/2014/06/tumblr_ly4m2qwepw1qhy6c9o2_r1_500_thumb.gif?w=240&h=168"
                 }
                 Switch{
