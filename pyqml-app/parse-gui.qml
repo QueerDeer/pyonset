@@ -12,7 +12,7 @@ ApplicationWindow {
     height: 680
     title: qsTr("LOG-Parser")
 
-    //bar with core buttons/avaliable options: open files, look-in hystory?, filter content
+    //bar with core buttons/avaliable options: open files, look-in stuff, filter content
     header: ToolBar {
         RowLayout {
             anchors.fill: parent
@@ -31,12 +31,12 @@ ApplicationWindow {
             }
             ToolButton {
                 text: qsTr("‹")
-                onClicked: swipeView.currentIndex--
+                onClicked: swipeView.currentIndex = 0
 
             }
             ToolButton {
                 text: qsTr("›")
-                onClicked: swipeView.currentIndex++
+                onClicked: swipeView.currentIndex = 1
             }
         }
 
@@ -128,7 +128,6 @@ ApplicationWindow {
         Dialog {
             id: period
             title: "LOG-Parser"
-            //width: 420
             standardButtons: Dialog.Ok | Dialog.Cancel
             onAccepted: parser.filterbytime(first.text, last.text)
 
