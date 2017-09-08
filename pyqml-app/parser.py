@@ -34,24 +34,30 @@ class Parser(QObject):
 
     # calling by openfile (following async couple are for acc.filtering)
     async def filetotable(self):
-        for row in self.filedict:
+        for index, row in enumerate(self.filedict):
             self.throwdata(row)
+            if not index % 5000:  # period was spinned out of thin air
+                QGuiApplication.processEvents()
 
     # calling by type-source filter
     async def tysototable(self, msgtype, fieldtype):
             buferdictlist = []
-            for row in self.filedict:
+            for index, row in enumerate(self.filedict):
                 if row[fieldtype] == msgtype:
                     self.throwdata(row)
+                    if not index % 5000:
+                        QGuiApplication.processEvents()
                     buferdictlist.append(row)
             self.filedict = list(buferdictlist)
 
     # calling by timestamp filter
     async def periodtotable(self, first, last):
             buferdictlist = []
-            for row in self.filedict:
+            for index, row in enumerate(self.filedict):
                 if first <= row['timestamp'] <= last:
                     self.throwdata(row)
+                    if not index % 5000:
+                        QGuiApplication.processEvents()
                     buferdictlist.append(row)
             self.filedict = list(buferdictlist)
 
