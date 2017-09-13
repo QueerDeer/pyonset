@@ -4,9 +4,10 @@
 import sys
 import csv
 import json
+from multiprocessing import Pool # ThreadPool and imap?
 from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtQml import QQmlApplicationEngine
-from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, QSysInfo
 
 
 # class for handling signals of qml-scene, filling the table and filtering it's content by saved dict-list
@@ -54,8 +55,12 @@ class Parser(QObject):
     # open file by piece of it's fullpath to write it in a dict for filtering and rebuild tableview's model
     @pyqtSlot(str)
     def openfile(self, filename):
-        with open(filename[7:]) as csvfile:
-            self.savedfilename = filename
+        if QSysInfo.productType() == 'windows':
+            fullpath = filename[8:]
+        else:
+            fullpath = filename[7:]
+        with open(fullpath) as csvfile:
+            self.savedfilename = fullpath
             self.setUp.emit(1)
             reader = csv.DictReader(csvfile,
                                     fieldnames=['timestamp', 'msgtype', 'sigsource', 'msgcontent'],
@@ -75,7 +80,7 @@ class Parser(QObject):
         self.filetotable()
 
         # and reset accumulation of ordered group filter
-        reader = csv.DictReader(open(self.savedfilename[7:]),
+        reader = csv.DictReader(open(self.savedfilename),
                                 fieldnames=['timestamp', 'msgtype', 'sigsource', 'msgcontent'],
                                 dialect='excel-tab')
         self.filedict = list(reader)
