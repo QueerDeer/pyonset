@@ -46,9 +46,9 @@ ApplicationWindow {
                 id: helm
                 text: "Title"
                 anchors.left: menuButton.right
-                anchors.right: filterButton1.left
-                anchors.rightMargin: 70
-                anchors.leftMargin: 70
+                anchors.right: filterButton0.left
+                anchors.rightMargin: 34
+                anchors.leftMargin: 34
                 elide: Label.ElideRight
                 horizontalAlignment: Qt.AlignHCenter
                 verticalAlignment: Qt.AlignVCenter
@@ -56,30 +56,53 @@ ApplicationWindow {
             }
 
             ToolButton {
+                id:filterButton0
+                text: qsTr("Duration")
+                enabled: false
+                onClicked: longpop.open()
+                anchors.right: filterButton1.left
+                anchors.rightMargin: 34
+
+                Popup {
+                    id: longpop
+                    y: 49
+
+                    TextField {
+                        id: duration
+                        placeholderText: "XYZms"
+                        text: ""
+                    }
+                }
+
+            }
+
+            ToolButton {
                 id:filterButton1
-                text: qsTr("Time")
+                text: qsTr("Period")
                 enabled: false
                 onClicked: timepop.open()
                 anchors.right: filterButton2.left
-                anchors.rightMargin: 70
+                anchors.rightMargin: 34
 
                 Popup {
                     id: timepop
                     y: 49
 
                     RowLayout {
-                        TextInput {
+                        TextField {
                             id: first
                             text: ""
+                            placeholderText: "00:00:00.000"
                         }
 
                         Label {
                             text: "-"
                         }
 
-                        TextInput {
+                        TextField {
                             id: last
                             text: ""
+                            placeholderText: "00:59:59.999"
                         }
                     }
                 }
@@ -92,7 +115,7 @@ ApplicationWindow {
                 enabled: false
                 onClicked: typepop.open()
                 anchors.right: filterButton3.left
-                anchors.rightMargin: 70
+                anchors.rightMargin: 34
 
                 Popup {
                     id:typepop
@@ -128,8 +151,8 @@ ApplicationWindow {
                 text: qsTr("Source")
                 enabled: false
                 onClicked: sourcepop.open()
-                anchors.right: acceptButton.left
-                anchors.rightMargin: 52
+                anchors.right: filterButton4.left
+                anchors.rightMargin: 34
 
                 Popup {
                     id: sourcepop
@@ -138,33 +161,59 @@ ApplicationWindow {
                         CheckBox {
                             id: gtDict
                             text: "GtDict"
-                            checked: false
+                            checked: true
                         }
                         CheckBox {
                             id: gtFrame
                             text: "GtFrame"
-                            checked: false
+                            checked: true
                         }
                         CheckBox {
                             id: gtMeas
                             text: "GtMeas"
-                            checked: false
+                            checked: true
                         }
                         CheckBox {
                             id: gtSp3
                             text: "GtSp3"
-                            checked: false
+                            checked: true
                         }
                         CheckBox {
                             id: gtState
                             text: "GtState"
-                            checked: false
+                            checked: true
                         }
                         CheckBox {
                             id: psSp3
                             text: "PsSp3"
-                            checked: false
+                            checked: true
                         }
+                        CheckBox {
+                            id: none
+                            text: "None"
+                            checked: true
+                        }
+                    }
+                }
+
+            }
+
+            ToolButton {
+                id:filterButton4
+                text: qsTr("Substring")
+                enabled: false
+                onClicked: subspop.open()
+                anchors.right: acceptButton.left
+                anchors.rightMargin: 34
+
+                Popup {
+                    id: subspop
+                    y: 49
+
+                    TextField {
+                        id: substring
+                        placeholderText: "something..."
+                        text: ""
                     }
                 }
 
@@ -190,8 +239,9 @@ ApplicationWindow {
                     if (gtSp3.checked === true) param2.push(gtSp3.text)
                     if (gtState.checked === true) param2.push(gtState.text)
                     if (psSp3.checked === true) param2.push(psSp3.text)
+                    if (none.checked === true) param2.push(none.text)
 
-                    parser.queuedfilter(first.text, last.text, JSON.stringify(param1), JSON.stringify(param2))
+                    parser.queuedfilter(first.text, last.text, JSON.stringify(param1), JSON.stringify(param2), substring.text)
                 }
                 enabled: false
             }
@@ -207,9 +257,11 @@ ApplicationWindow {
                 parser.openfile(fileDialog.fileUrl)
                 helm.text = fileDialog.fileUrl
                 acceptButton.enabled = true
+                filterButton0.enabled = true
                 filterButton1.enabled = true
                 filterButton2.enabled = true
                 filterButton3.enabled = true
+                filterButton4.enabled = true
             }
         }
     }
@@ -279,7 +331,7 @@ ApplicationWindow {
                                else if (listModel.get(styleData.row).msgtype === "WARNING")
                                    "yellow"
                                else
-                                   "white"
+                                   "snow"
                         border.color: "gainsboro"
                         border.width: 0 //dunno, am i in need of'em, too thick
                     }
@@ -289,7 +341,7 @@ ApplicationWindow {
                 itemDelegate: Item {
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
-                        color: listModel.get(styleData.row).msgtype === "ERROR" ? "white" : "black"
+                        color: listModel.get(styleData.row).msgtype === "ERROR" ? "snow" : "black"
                         elide: Text.ElideMiddle
                         text: styleData.value
                     }

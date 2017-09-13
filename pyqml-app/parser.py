@@ -4,7 +4,6 @@
 import sys
 import csv
 import json
-from multiprocessing import Pool # ThreadPool and imap?
 from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtQml import QQmlApplicationEngine
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, QSysInfo
@@ -39,7 +38,8 @@ class Parser(QObject):
     # filling bufferdict with rows of special single words in their concrete fields (such as 'msgtype', 'sigsource')
     def tysototable(self, msgtype, fieldtype):
             buferdictlist = []
-            for index, row in enumerate(self.filedict):
+
+            for row in self.filedict:
                 if row[fieldtype] in msgtype:
                     buferdictlist.append(row)
             self.filedict = list(buferdictlist)
@@ -47,8 +47,21 @@ class Parser(QObject):
     # filling bufferdict with row of timestamp limits in first and last param-s
     def periodtotable(self, first, last):
             buferdictlist = []
-            for index, row in enumerate(self.filedict):
-                if first <= row['timestamp'] <= last:
+
+            for row in self.filedict:
+                if first <= row['timestamp'][11:] <= last:
+                    buferdictlist.append(row)
+            self.filedict = list(buferdictlist)
+
+    # check anything for the coincidence
+    def substrtotable(self, substring):
+            buferdictlist = []
+
+            for row in self.filedict:
+                if (row['timestamp'].find(substring) > 0 or
+                            row['msgtype'].find(substring) > 0 or
+                            row['sigsource'].find(substring) > 0 or
+                            row['msgcontent'].find(substring) > 0):
                     buferdictlist.append(row)
             self.filedict = list(buferdictlist)
 
@@ -62,19 +75,25 @@ class Parser(QObject):
         with open(fullpath) as csvfile:
             self.savedfilename = fullpath
             self.setUp.emit(1)
+
             reader = csv.DictReader(csvfile,
                                     fieldnames=['timestamp', 'msgtype', 'sigsource', 'msgcontent'],
                                     dialect='excel-tab')
             self.filedict = list(reader)
-            self.updatePeriod.emit(self.filedict[1]['timestamp'], self.filedict[-1]['timestamp'])
+
+            self.updatePeriod.emit(self.filedict[1]['timestamp'][11:], self.filedict[-1]['timestamp'][11:])
             self.filetotable()
 
     # ordered filtering and pushing buffer to table
-    @pyqtSlot(str, str, str, str)
-    def queuedfilter(self, first, last, typelist, sourcelist):
+    @pyqtSlot(str, str, str, str, str)
+    def queuedfilter(self, first, last, typelist, sourcelist, substring):
         self.setUp.emit(1)
 
-        self.periodtotable(first, last)
+        if substring != '':
+            self.substrtotable(substring)
+        if first != '' and last != '':
+            self.periodtotable(first, last)
+
         self.tysototable(json.loads(typelist), 'msgtype')
         self.tysototable(json.loads(sourcelist), 'sigsource')
         self.filetotable()
