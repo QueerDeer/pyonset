@@ -3,7 +3,7 @@
 
 import sys
 import csv
-import asyncio
+import json
 from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtQml import QQmlApplicationEngine
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
@@ -13,7 +13,7 @@ from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 class Parser(QObject):
     def __init__(self):
         QObject.__init__(self)
-        self.filedict = []  # rows of ordered dicts for filtering
+        self.filedict = []  # rows of ordered dicts from the log (for ordered filtering)
         self.savedfilename = ''  # stuff for clearing filter's stack
 
     rowAdd = pyqtSignal(int, arguments=['mesg'])  # add new row through context param-s
@@ -22,61 +22,34 @@ class Parser(QObject):
 
     # initiate updating of tableview model into qml-scene throwing data through context
     def throwdata(self, row):
-        list_model_1 = row['timestamp']
-        list_model_2 = row['msgtype']
-        list_model_3 = row['sigsource']
-        list_model_4 = row['msgcontent']
-        root_context.setContextProperty('model1', list_model_1)
-        root_context.setContextProperty('model2', list_model_2)
-        root_context.setContextProperty('model3', list_model_3)
-        root_context.setContextProperty('model4', list_model_4)
+        root_context.setContextProperty('model1', row['timestamp'])
+        root_context.setContextProperty('model2', row['msgtype'])
+        root_context.setContextProperty('model3', row['sigsource'])
+        root_context.setContextProperty('model4', row['msgcontent'])
         self.rowAdd.emit(1)
 
-    # calling by openfile (following async couple are for acc.filtering)
-    async def filetotable(self):
+    # calling by openfile and in the end of ordered filter (following couple are for filtering)
+    def filetotable(self):
         for index, row in enumerate(self.filedict):
             self.throwdata(row)
             if not index % 5000:  # period was spinned out of thin air
                 QGuiApplication.processEvents()
 
-    # calling by type-source filter
-    async def tysototable(self, msgtype, fieldtype):
+    # filling bufferdict with rows of special single words in their concrete fields (such as 'msgtype', 'sigsource')
+    def tysototable(self, msgtype, fieldtype):
             buferdictlist = []
             for index, row in enumerate(self.filedict):
-                if row[fieldtype] == msgtype:
-                    self.throwdata(row)
-                    if not index % 5000:
-                        QGuiApplication.processEvents()
+                if row[fieldtype] in msgtype:
                     buferdictlist.append(row)
             self.filedict = list(buferdictlist)
 
-    # calling by timestamp filter
-    async def periodtotable(self, first, last):
+    # filling bufferdict with row of timestamp limits in first and last param-s
+    def periodtotable(self, first, last):
             buferdictlist = []
             for index, row in enumerate(self.filedict):
                 if first <= row['timestamp'] <= last:
-                    self.throwdata(row)
-                    if not index % 5000:
-                        QGuiApplication.processEvents()
                     buferdictlist.append(row)
             self.filedict = list(buferdictlist)
-
-    # filling table with row of timestamp limits in first and last param-s
-    @pyqtSlot(str, str)
-    def filterbytime(self, first, last):
-        self.setUp.emit(1)
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.periodtotable(first, last))
-
-    # filling table with rows of special single words in their concrete fields (such as 'msgtype', 'sigsource')
-    @pyqtSlot(str, str)
-    def filterbytypesource(self, msgtype, fieldtype):
-        self.setUp.emit(1)
-        if msgtype == '':
-            self.openfile(self.savedfilename)
-        else:
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(self.tysototable(msgtype, fieldtype))
 
     # open file by piece of it's fullpath to write it in a dict for filtering and rebuild tableview's model
     @pyqtSlot(str)
@@ -84,12 +57,29 @@ class Parser(QObject):
         with open(filename[7:]) as csvfile:
             self.savedfilename = filename
             self.setUp.emit(1)
-            reader = csv.DictReader(csvfile,  fieldnames=['timestamp', 'msgtype', 'sigsource', 'msgcontent'],
+            reader = csv.DictReader(csvfile,
+                                    fieldnames=['timestamp', 'msgtype', 'sigsource', 'msgcontent'],
                                     dialect='excel-tab')
             self.filedict = list(reader)
             self.updatePeriod.emit(self.filedict[1]['timestamp'], self.filedict[-1]['timestamp'])
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(self.filetotable())
+            self.filetotable()
+
+    # ordered filtering and pushing buffer to table
+    @pyqtSlot(str, str, str, str)
+    def queuedfilter(self, first, last, typelist, sourcelist):
+        self.setUp.emit(1)
+
+        self.periodtotable(first, last)
+        self.tysototable(json.loads(typelist), 'msgtype')
+        self.tysototable(json.loads(sourcelist), 'sigsource')
+        self.filetotable()
+
+        # and reset accumulation of ordered group filter
+        reader = csv.DictReader(open(self.savedfilename[7:]),
+                                fieldnames=['timestamp', 'msgtype', 'sigsource', 'msgcontent'],
+                                dialect='excel-tab')
+        self.filedict = list(reader)
+
 
 if __name__ == '__main__':
     sys_argv = sys.argv

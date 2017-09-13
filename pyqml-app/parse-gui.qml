@@ -7,7 +7,9 @@ import QtQuick.Controls.Material 2.1
 import QtQuick.Dialogs 1.2
 
 ApplicationWindow {
+    id: window
     visible: true
+    visibility: "Windowed"
     width: 960
     height: 680
     title: qsTr("LOG-Parser")
@@ -16,102 +18,184 @@ ApplicationWindow {
     header: ToolBar {
         RowLayout {
             anchors.fill: parent
+
+            ToolButton {
+                text: "□"
+                font.pointSize: 12
+                onClicked: {
+                    if (text === "◱")
+                    {
+                        text = "□"
+                        window.visibility = "Windowed"
+                    }
+                    else
+                    {
+                        text = "◱"
+                        window.visibility = "FullScreen"
+                    }
+                }
+            }
+
             ToolButton {
                 id: menuButton
-                text: qsTr("⋮")
-                onClicked: menu.open()
+                text: "File"
+                onClicked: fileDialog.open()
             }
+
             Label {
                 id: helm
                 text: "Title"
+                anchors.left: menuButton.right
+                anchors.right: filterButton1.left
+                anchors.rightMargin: 70
+                anchors.leftMargin: 70
                 elide: Label.ElideRight
                 horizontalAlignment: Qt.AlignHCenter
                 verticalAlignment: Qt.AlignVCenter
                 Layout.fillWidth: true
             }
+
             ToolButton {
-                text: qsTr("‹")
-                onClicked: swipeView.currentIndex = 0
-
-            }
-            ToolButton {
-                text: qsTr("›")
-                onClicked: swipeView.currentIndex = 1
-            }
-        }
-
-        Menu {
-            id: menu
-            y: menuButton.height
-
-            MenuItem {
-                text: "Open log..."
-                onTriggered: fileDialog.open()
-            }
-            MenuItem {
-                id: filterbutton
-                text: "Filter by..."
-                onTriggered: submenu1.open()
+                id:filterButton1
+                text: qsTr("Time")
                 enabled: false
+                onClicked: timepop.open()
+                anchors.right: filterButton2.left
+                anchors.rightMargin: 70
 
-                 //sources and types were bind hardly, but we can try to add items dynamically, if it really needs
-                 //or, maybe, allow user to choose a list of filters in one time
-                 Menu {
-                    id: submenu1
-                    MenuItem {
-                        text: "Nothing"
-                        onTriggered: parser.filterbytypesource("", "msgtype")
-                    }
-                    MenuItem{
-                        text: "Period"
-                        onTriggered: period.open()
-                    }
-                    MenuItem {
-                        text: "Debug type"
-                        onTriggered: parser.filterbytypesource("DEBUG", "msgtype")
-                    }
-                    MenuItem {
-                        text: "Error type"
-                        onTriggered: parser.filterbytypesource("ERROR", "msgtype")
-                    }
-                    MenuItem {
-                        text: "Warning type"
-                        onTriggered: parser.filterbytypesource("WARNING", "msgtype")
-                    }
-                    MenuItem {
-                        text: "Signal source"
-                        onTriggered: submenu2.open()
+                Popup {
+                    id: timepop
+                    y: 49
 
-                        Menu {
-                           id: submenu2
-                           MenuItem {
-                               text: "GtDict"
-                               onTriggered: parser.filterbytypesource("GtDict", "sigsource")
-                           }
-                           MenuItem {
-                               text: "GtFrame"
-                               onTriggered: parser.filterbytypesource("GtFrame", "sigsource")
-                           }
-                           MenuItem {
-                               text: "GtMeas"
-                               onTriggered: parser.filterbytypesource("GtMeas", "sigsource")
-                           }
-                           MenuItem {
-                               text: "GtSp3"
-                               onTriggered: parser.filterbytypesource("GtSp3", "sigsource")
-                           }
-                           MenuItem {
-                               text: "GtState"
-                               onTriggered: parser.filterbytypesource("GtState", "sigsource")
-                           }
-                           MenuItem {
-                               text: "PsSp3"
-                               onTriggered: parser.filterbytypesource("PsSp3", "sigsource")
-                           }
-                       }
+                    RowLayout {
+                        TextInput {
+                            id: first
+                            text: ""
+                        }
+
+                        Label {
+                            text: "-"
+                        }
+
+                        TextInput {
+                            id: last
+                            text: ""
+                        }
                     }
                 }
+
             }
+
+            ToolButton {
+                id:filterButton2
+                text: qsTr("Type")
+                enabled: false
+                onClicked: typepop.open()
+                anchors.right: filterButton3.left
+                anchors.rightMargin: 70
+
+                Popup {
+                    id:typepop
+                    y: 49
+                    Column {
+                        CheckBox {
+                            id: debug
+                            text: "DEBUG"
+                            checked: false
+                        }
+                        CheckBox {
+                            id: error
+                            text: "ERROR"
+                            checked: false
+                        }
+                        CheckBox {
+                            id: info
+                            text: "INFO   "
+                            checked: false
+                        }
+                        CheckBox {
+                            id: warning
+                            text: "WARNING"
+                            checked: false
+                        }
+                    }
+                }
+
+            }
+
+            ToolButton {
+                id:filterButton3
+                text: qsTr("Source")
+                enabled: false
+                onClicked: sourcepop.open()
+                anchors.right: acceptButton.left
+                anchors.rightMargin: 52
+
+                Popup {
+                    id: sourcepop
+                    y: 49
+                    Column {
+                        CheckBox {
+                            id: gtDict
+                            text: "GtDict"
+                            checked: false
+                        }
+                        CheckBox {
+                            id: gtFrame
+                            text: "GtFrame"
+                            checked: false
+                        }
+                        CheckBox {
+                            id: gtMeas
+                            text: "GtMeas"
+                            checked: false
+                        }
+                        CheckBox {
+                            id: gtSp3
+                            text: "GtSp3"
+                            checked: false
+                        }
+                        CheckBox {
+                            id: gtState
+                            text: "GtState"
+                            checked: false
+                        }
+                        CheckBox {
+                            id: psSp3
+                            text: "PsSp3"
+                            checked: false
+                        }
+                    }
+                }
+
+            }
+
+            ToolButton {
+                id: acceptButton
+                text: qsTr("✓")
+                font.pointSize: 17
+                anchors.right: parent.right
+                onClicked: {
+                    var param1 = []
+                    var param2 = []
+
+                    if (debug.checked === true) param1.push(debug.text)
+                    if (error.checked === true) param1.push(error.text)
+                    if (info.checked === true) param1.push(info.text)
+                    if (warning.checked === true) param1.push(warning.text)
+
+                    if (gtDict.checked === true) param2.push(gtDict.text)
+                    if (gtFrame.checked === true) param2.push(gtFrame.text)
+                    if (gtMeas.checked === true) param2.push(gtMeas.text)
+                    if (gtSp3.checked === true) param2.push(gtSp3.text)
+                    if (gtState.checked === true) param2.push(gtState.text)
+                    if (psSp3.checked === true) param2.push(psSp3.text)
+
+                    parser.queuedfilter(first.text, last.text, JSON.stringify(param1), JSON.stringify(param2))
+                }
+                enabled: false
+            }
+
         }
 
         FileDialog {
@@ -119,49 +203,43 @@ ApplicationWindow {
             title: "Open file..."
             nameFilters: [ "log files (*.log)", "All files (*)" ]
             onAccepted: {
+                swipeView.currentIndex = 1
                 parser.openfile(fileDialog.fileUrl)
                 helm.text = fileDialog.fileUrl
-                filterbutton.enabled = true
+                acceptButton.enabled = true
+                filterButton1.enabled = true
+                filterButton2.enabled = true
+                filterButton3.enabled = true
             }
         }
-
-        Dialog {
-            id: period
-            title: "LOG-Parser"
-            standardButtons: Dialog.Ok | Dialog.Cancel
-            onAccepted: parser.filterbytime(first.text, last.text)
-
-            ColumnLayout {
-                anchors.fill: parent
-
-                Label {
-                    text: qsTr("Set the timestamp limit for represented content")
-                }
-
-                RowLayout {
-
-                    TextInput {
-                        id: first
-                        text: ""
-                    }
-
-                    Label {
-                        text: "-"
-                    }
-
-                    TextInput {
-                        id: last
-                        text: ""
-                    }
-                }
-            }
-        }
-
     }
 
     SwipeView {
         id: swipeView
         anchors.fill: parent
+        orientation: Qt.Vertical
+        currentIndex: 2
+        interactive: true //false, if you don't drug scene by table's headers
+
+        Page {
+            Rectangle {
+                anchors.fill: parent
+                color: "#FCF0E4"
+            }
+
+            ColumnLayout {
+                anchors.bottom: parent.bottom
+                AnimatedImage {
+                    visible: easteregg.position == 1.0 ? true : false
+                    paused: easteregg.position == 0.0 ? true : false
+                    source: "https://bunusevdim.files.wordpress.com/2014/06/tumblr_ly4m2qwepw1qhy6c9o2_r1_500_thumb.gif?w=240&h=168"
+                }
+                Switch{
+                    id: easteregg
+                }
+            }
+
+        }
 
         //page with the parsed content
         Page {
@@ -233,25 +311,6 @@ ApplicationWindow {
 
         }
 
-        //reserve page
-        Page {
-            Rectangle {
-                anchors.fill: parent
-                color: "#FCF0E4"
-            }
-            ColumnLayout {
-            anchors.centerIn: parent
-                AnimatedImage {
-                visible: easteregg.position == 1.0 ? true : false
-                paused: easteregg.position == 0.0 ? true : false
-                source: "https://bunusevdim.files.wordpress.com/2014/06/tumblr_ly4m2qwepw1qhy6c9o2_r1_500_thumb.gif?w=240&h=168"
-                }
-                Switch{
-                    id: easteregg
-                    text: qsTr("For some reasons in future")
-                }
-            }
-        }
     }
 
     Connections {
