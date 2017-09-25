@@ -32,7 +32,7 @@ class Parser(QObject):
     def filetotable(self):
         for index, row in enumerate(self.filedict):
             self.throwdata(row)
-            if not index % 5000:  # period was spinned out of thin air
+            if not index % 3000:  # period was spinned out of thin air
                 QGuiApplication.processEvents()
 
     # filling bufferdict with rows of special single words in their concrete fields (such as 'msgtype', 'sigsource')
@@ -65,6 +65,14 @@ class Parser(QObject):
                     buferdictlist.append(row)
             self.filedict = list(buferdictlist)
 
+    # subcstracting queues of messages by timestamps
+    def lengthtotable(self, duration):
+            print(duration)
+#            buferdictlist = []
+#
+#            for row in self.filedict:
+#                if
+
     # open file by piece of it's fullpath to write it in a dict for filtering and rebuild tableview's model
     @pyqtSlot(str)
     def openfile(self, filename):
@@ -85,14 +93,16 @@ class Parser(QObject):
             self.filetotable()
 
     # ordered filtering and pushing buffer to table
-    @pyqtSlot(str, str, str, str, str)
-    def queuedfilter(self, first, last, typelist, sourcelist, substring):
+    @pyqtSlot(str, str, str, str, str, str)
+    def queuedfilter(self, first, last, typelist, sourcelist, substring, duration):
         self.setUp.emit(1)
 
         if substring != '':
             self.substrtotable(substring)
         if first != '' and last != '':
             self.periodtotable(first, last)
+        if duration != '':
+            self.lengthtotable(duration)
 
         self.tysototable(json.loads(typelist), 'msgtype')
         self.tysototable(json.loads(sourcelist), 'sigsource')

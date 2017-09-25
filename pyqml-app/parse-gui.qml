@@ -69,8 +69,9 @@ ApplicationWindow {
 
                     TextField {
                         id: duration
-                        placeholderText: "XYZms"
+                        placeholderText: "00:00.000"
                         text: ""
+                        validator: RegExpValidator { regExp: /(\d{1,2})([:]\d{1,2})([.]\d{1,3})?$/ }
                     }
                 }
 
@@ -93,6 +94,7 @@ ApplicationWindow {
                             id: first
                             text: ""
                             placeholderText: "00:00:00.000"
+                            validator: RegExpValidator { regExp: /(\d{1,2})([:]\d{1,2})([:]\d{1,2})([.]\d{1,3})?$/ }
                         }
 
                         Label {
@@ -103,6 +105,7 @@ ApplicationWindow {
                             id: last
                             text: ""
                             placeholderText: "00:59:59.999"
+                            validator: RegExpValidator { regExp: /(\d{1,2})([:]\d{1,2})([:]\d{1,2})([.]\d{1,3})?$/ }
                         }
                     }
                 }
@@ -124,22 +127,22 @@ ApplicationWindow {
                         CheckBox {
                             id: debug
                             text: "DEBUG"
-                            checked: false
+                            checked: true
                         }
                         CheckBox {
                             id: error
                             text: "ERROR"
-                            checked: false
+                            checked: true
                         }
                         CheckBox {
                             id: info
                             text: "INFO   "
-                            checked: false
+                            checked: true
                         }
                         CheckBox {
                             id: warning
                             text: "WARNING"
-                            checked: false
+                            checked: true
                         }
                     }
                 }
@@ -241,7 +244,7 @@ ApplicationWindow {
                     if (psSp3.checked === true) param2.push(psSp3.text)
                     if (none.checked === true) param2.push(none.text)
 
-                    parser.queuedfilter(first.text, last.text, JSON.stringify(param1), JSON.stringify(param2), substring.text)
+                    parser.queuedfilter(first.text, last.text, JSON.stringify(param1), JSON.stringify(param2), substring.text, duration.text)
                 }
                 enabled: false
             }
@@ -326,9 +329,9 @@ ApplicationWindow {
                     Rectangle {
                         color: if (styleData.selected)
                                    "slateblue"
-                               else if (listModel.get(styleData.row).msgtype === "ERROR")
+                               else if ((listModel.get(styleData.row) ? listModel.get(styleData.row).msgtype : 0) === "ERROR")
                                    "crimson"
-                               else if (listModel.get(styleData.row).msgtype === "WARNING")
+                               else if ((listModel.get(styleData.row) ? listModel.get(styleData.row).msgtype : 0) === "WARNING")
                                    "yellow"
                                else
                                    "snow"
@@ -341,9 +344,9 @@ ApplicationWindow {
                 itemDelegate: Item {
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
-                        color: listModel.get(styleData.row).msgtype === "ERROR" ? "snow" : "black"
+                        color: (listModel.get(styleData.row) ? listModel.get(styleData.row).msgtype : 0) === "ERROR" ? "snow" : "black"
                         elide: Text.ElideMiddle
-                        text: styleData.value
+                        text: styleData.value ? styleData.value : ''
                     }
                 }
 
