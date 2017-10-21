@@ -8,4 +8,4 @@ My current version of python is Python 3.5.2, run scripts on PyCharm Community E
 For GUI PyQt 5.9 is used, also, Qt version is 5.9.1
 
 # OPT
-...
+![parsScreen](parsScreen.png)
